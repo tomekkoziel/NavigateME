@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include "head.html" %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+    <title>Opis</title>
+
+</head>
+
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container mt-4 text-center">
+        <h2>O Nas</h2>
+        <p>Głównym celem tej aplikacji jest ułatwienia podróżowania poprzez zapewnienie efektywnych tras, które
+            umożliwią szybkie
+            dotarcie do celu.</p>
+
+        <hr class="m-4">
+
+        <h2>Zasady Funkcjonowania Strony</h2>
+
+        <p>Przechodząc do sekcji "Zaplanuj trasę", na ekranie pojawi się interaktywna mapa.</p>
+        <p>Aby zawęzić obszar wyszukiwania trasy do konkretnego miasta lub państwa, należy umieścić znaczniki
+            reprezentujące
+            poszczególne przystanki na trasie. Można to zrobić poprzez klikanie na mapę lub wpisywanie dokładnych
+            adresów w
+            polu "Wyszukaj miejsce" znajdującym się w lewym górnym rogu mapy. Warto pamiętać, że pierwszy wybrany punkt
+            zostanie uznany za miejsce startowe. Maksymalna liczba przystanków wynosi dziesięć.</p>
+        <p>W przypadku błędów istnieje możliwość usunięcia wszystkich znaczników za pomocą przycisku "Usuń wszystkie
+            znaczniki" lub zaznaczenia wybranych znaczników oraz usunięcia ich za pomocą przycisku "Usuń wybrane
+            przyciski".</p>
+        <p>Dla zwiększenia czytelności mapy można ukryć lub pokazać zaznaczone do tej pory znaczniki, korzystając z
+            odpowiednich przycisków.</p>
+        <p>Po wybraniu wszystkich punktów trasy, użytkownik decyduje, który środek transportu będzie używany do
+            przemieszczania
+            się między przystankami. Dostępne opcje to: samochód, rower oraz piesza wędrówka.</p>
+        <p>Po dokładnym ustaleniu szczegółów trasy, należy nacisnąć przycisk "Wyznacz trasę". Widok mapy zmieni się,
+            prezentując zaproponowaną trasę, z oznaczeniem kolejnych przystanków literami alfabetu. Pod tablicą
+            znaczników ukażę się tekstowa instrukcja przedstawiająca kolejne kroki podróży wraz z czasem oraz dystasem
+            jaki one zajmą.</p>
+    </div>
+</body>
+
+</html>

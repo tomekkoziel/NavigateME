@@ -1,0 +1,61 @@
+{% load static %}
+
+<!doctype html>
+<html>
+
+<head>
+    {% include "head.html" %}
+
+    <title>Zaplanuj trasę</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script type="module" src="{% static 'js/index.js' %}"></script>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    <input id="pac-input" class="controls" type="text" placeholder="Wyszukaj miejsce" />
+
+    <!--Element div dla mapy -->
+    <div id="map"></div>
+
+    <div id="map-controls" class="d-flex justify-content-center mt-3">
+        <input id="hide-markers" class="btn btn-secondary mr-2" type="button" value="Schowaj znaczniki" />
+        <input id="show-markers" class="btn btn-info mr-2" type="button" value="Pokaż znaczniki" />
+        <input id="delete-all-markers" class="btn btn-danger mr-2" type="button" value="Usuń wszystkie znaczniki" />
+    </div>
+
+    <div id="map-controls" class="d-flex justify-content-center mt-3">
+
+        <span class="mr-2 mt-1" style="font-size: 20px;">Wybierz środek transportu:</span>
+
+        <select id="transport-type" class="form-select mr-2">
+            <option value="DRIVING">Samochód</option>
+            <option value="WALKING">Pieszo</option>
+            <option value="BICYCLING">Rower</option>
+        </select>
+
+        <input id="calculate-road" class="btn btn-success" type="button" disabled value="Wyznacz trasę" />
+    </div>
+
+    <div id="map-controls" class="d-flex justify-content-center mt-2">
+        <h2>Tablica znaczników</h2>
+    </div>
+
+    <table class="table table-hover" id="marker-table"></table>
+
+    <div id="map-controls" class="d-flex justify-content-center mt-3">
+        <button id="delete-selected-markers" class="btn btn-danger" disabled>Usuń wybrane znaczniki</button>
+    </div>
+
+    <div id="route-details" class="d-flex justify-content-center mt-3"></div>
+
+    <!-- Pobieramy libraries=places aby działał elemnt SearchBox -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEYKC9OAaWT-YShqUlYsWZzi8JpaSqzBE&callback=initMap&libraries=places&v=weekly"
+        defer></script>
+</body>
+
+</html>
