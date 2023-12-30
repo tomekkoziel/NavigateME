@@ -175,6 +175,7 @@ function deleteAllMarkers() {
 
     generateMarkerTable();
     visibilityOfButtons();
+    deleteRouteDetails();
 }
 
 function generateMarkerTable() {
@@ -408,6 +409,15 @@ function generateRouteDetails(route, matrix) {
 
     textHTML += `<p>Podróż łącznie zajmie ${hoursText}${minutes} minut, w sumie zostanie pokonanych ${finDist} km.</p>`;
     textHTML += `</div>`;
+
+    textContainer.innerHTML = textHTML;
+}
+
+function deleteRouteDetails() {
+    const textContainer = document.getElementById("route-details");
+    if (!textContainer) return;
+
+    let textHTML = ``;
 
     textContainer.innerHTML = textHTML;
 }
