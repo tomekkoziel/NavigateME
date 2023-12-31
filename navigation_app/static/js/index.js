@@ -274,10 +274,13 @@ function calculateRoute() {
 
         if (response && response.rows) {
             // Umieszczenie danych o odległości i czasie potrzebnym do dotarcia do markerów w macierzy (value - informacje w metrach i sekundach, text - informacje zaokrąglone do większych jednostek, np. kilometry i godziny)
-            matrix = response.rows.map(row =>
-                row.elements.map(element => [element.distance.value, element.duration.value, element.distance.text, element.duration.text])
-            );
-
+            try {
+                matrix = response.rows.map(row =>
+                    row.elements.map(element => [element.distance.value, element.duration.value, element.distance.text, element.duration.text])
+                );
+            } catch (error) {
+                alert("Wyznaczenie trasy pomiędzy wybranymi punktami jest niemożliwe przy pomocy danego środka transportu.");
+            }
 
             // Informację o czasie potrzebnym do dotarcia do celu uzyskujemy w nastepujący sposób matrix["origin marker"]["destination marker"][1]
             // Przykład poniżej: czas potrzebny na dotarcie z 0 punktu do 1 w sekundach
