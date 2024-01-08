@@ -367,12 +367,12 @@ function mostOptimalPath(graph) {
     const length = graph.length;
     const visitedNodes = new Array(length).fill(false);
     let path = [];
-    let minCost = Number.MAX_VALUE;
+    let minDuration = Number.MAX_VALUE;
 
     function recursion(currentNode, currentPath, currentCost) {
         if (currentPath.length === length) {
-            if (currentCost < minCost) {
-                minCost = currentCost;
+            if (currentCost < minDuration) {
+                minDuration = currentCost;
                 path = currentPath.slice();
             }
             return;
@@ -486,6 +486,15 @@ function deleteSelectedMarkers() {
 
     // Refresh the marker table
     generateMarkerTable();
+    deleteRouteDetails();
+
+    display.set('directions', null);
+
+    showMarkers();
+
+    if (markers.length === 0) {
+        deleteAllMarkers();
+    }
 }
 
 window.initMap = initMap;
