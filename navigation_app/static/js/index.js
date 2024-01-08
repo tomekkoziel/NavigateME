@@ -74,7 +74,7 @@ function addMarker(position, geocoder) {
         var tmpLng = position.lng().toFixed(3);
         let LatLngString = [];
 
-        // Używam Geocoding API w celu odszyfrowania adrersu miasta za pomocą współrzędnych 
+        // Użyto Geocoding API w celu odszyfrowania adrersu miasta za pomocą współrzędnych 
         geocoder
             .geocode({ location: latlng })
             .then((response) => {
@@ -85,7 +85,7 @@ function addMarker(position, geocoder) {
                     LatLngString.push("Szerokość: " + tmpLat + " Długość: " + tmpLng);
                 }
 
-                // Tworzymy znacznik wewnątrz obiektu geocoding ponieważ działa on asynchronicznie
+                // Tworzenie znacznika odbywa się wewnątrz obiektu geocoding ponieważ działa on asynchronicznie
                 const marker = new google.maps.Marker({
                     position,
                     map,
@@ -109,46 +109,52 @@ function addMarker(position, geocoder) {
 }
 
 function handlePlacesChanged(searchBox, map) {
-    const places = searchBox.getPlaces();
 
-    if (places.length == 0) {
-        return;
-    }
+    if (markers.length <= 9) {
+        const places = searchBox.getPlaces();
 
-    const bounds = new google.maps.LatLngBounds();
-
-    places.forEach((place) => {
-        if (!place.geometry || !place.geometry.location) {
-            console.log("Returned place contains no geometry");
+        if (places.length == 0) {
             return;
         }
 
-        // Tworzenie znacznika dla każdego wyszukanego miejsca
-        markers.push(
-            new google.maps.Marker({
-                map,
-                title: place.name,
-                position: place.geometry.location,
+        const bounds = new google.maps.LatLngBounds();
 
-                // ID znacznika
-                marker_id: iterator,
-            }),
-        );
-        iterator++;
+        places.forEach((place) => {
+            if (!place.geometry || !place.geometry.location) {
+                console.log("Returned place contains no geometry");
+                return;
+            }
 
-        generateMarkerTable();
-        visibilityOfButtons();
+            // Tworzenie znacznika dla każdego wyszukanego miejsca
+            markers.push(
+                new google.maps.Marker({
+                    map,
+                    title: place.name,
+                    position: place.geometry.location,
 
-        if (place.geometry.viewport) {
-            // Tylko obiekty geocodes posiadaja viewport
-            bounds.union(place.geometry.viewport);
-        } else {
-            bounds.extend(place.geometry.location);
-        }
-    });
-    map.fitBounds(bounds);
+                    // ID znacznika
+                    marker_id: iterator,
+                }),
+            );
+            iterator++;
+
+            generateMarkerTable();
+            visibilityOfButtons();
+
+            if (place.geometry.viewport) {
+                // Tylko obiekty geocodes posiadaja viewport
+                bounds.union(place.geometry.viewport);
+            } else {
+                bounds.extend(place.geometry.location);
+            }
+        });
+        map.fitBounds(bounds);
+    } else {
+        alert("Możliwe jest ustawienie jedynie 10 znaczników na mapie.");
+    }
 }
 
+// Umieszczenie znaczników znajdujących się w tablicy markers na mapie
 function setMapOnAll(map) {
     for (let i = 0; i < markers.length; i++) {
         markers[i].setMap(map);
@@ -178,6 +184,7 @@ function deleteAllMarkers() {
     deleteRouteDetails();
 }
 
+// Generowanie tablicy znaczików i wyświetlanie jej na stronie
 function generateMarkerTable() {
     const tableContainer = document.getElementById("marker-table");
     if (!tableContainer) return;
@@ -190,8 +197,6 @@ function generateMarkerTable() {
         const lng = position.lng().toFixed(3);
         let name;
         const id = marker.marker_id;
-
-        // console.log(marker.place.name);
 
         if (marker.place) {
             name = marker.place.name;
@@ -223,30 +228,27 @@ function visibilityOfButtons() {
     }
 }
 
+// Główna funkcja odpowiedzialna za generowanie tras pomiędzy znacznikami
 function calculateRoute() {
-    // Warunek sprawdzający czy na mapie są umieszczone znaczniki
-    if (markers.length == 0) {
-        alert("No markers selected.")
+    if (markers.length === 1) {
+        alert("Wyznaczenie trasy dla jednego znacznika jest niemozliwe, proszę dodać więcej punktów na mapę.");
+        return;
     }
 
     // Usunięcie oryginalnych znaczników z mapy, podczas wyznaczania tras pojawiają się osobne znaczniki z oznaczeniem kolejności odwiedzania.
     hideMarkers();
 
-    // Assuming the select element has an id of "transport-type"
-    const selectElement = document.getElementById("transport-type");
+    // Odczytanie wybranego środka transportu z elementu "transport-type"
+    const selectedTransport = document.getElementById("transport-type").value;
 
-    // Get the selected value
-    const selectedTransport = selectElement.value;
-
-    // Use the selected value in your logic, for example, log it to the console
+    // Wypisanie wybranego środka transportu
     console.log("Selected Transport:", selectedTransport);
 
     display.set('directions', null);
 
     const service = new google.maps.DistanceMatrixService();
 
-    // const originLocation = { lat: markers[0].getPosition().lat(), lng: markers[0].getPosition().lng() };
-    // Obliczanie maierzy odleglosci dla kazdego punktu w celu stworzenia macierzy, zmiana podejscia - poczatkowo obliczana byla wartosc jedynie dla punktu startowego (pierwszego znacznika)
+    // Obliczanie macierzy odleglosci dla kazdego punktu w celu stworzenia macierzy, zmiana podejscia - poczatkowo obliczana byla wartosc jedynie dla punktu startowego (pierwszego znacznika)
     const originsLocation = []
     const destinationLocations = []
 
@@ -270,7 +272,7 @@ function calculateRoute() {
     // console.log(JSON.stringify(request, null, 2));
     // response
     service.getDistanceMatrix(request).then((response) => {
-        // console.log(JSON.stringify(response, null, 2));
+        console.log(JSON.stringify(response, null, 2));
 
         if (response && response.rows) {
             // Umieszczenie danych o odległości i czasie potrzebnym do dotarcia do markerów w macierzy (value - informacje w metrach i sekundach, text - informacje zaokrąglone do większych jednostek, np. kilometry i godziny)
@@ -288,7 +290,11 @@ function calculateRoute() {
             // console.log(matrix[0][1][1]);
 
             // Wyznaczanie planu podróży za pomocą algorytmu najbliższego sąsiada
-            const route = nearestNeighbourAlgorith(matrix);
+            let timerStart = Date.now();
+
+            const route = mostOptimalPath(matrix);
+            let timeTaken = Date.now() - timerStart;
+            console.log("Total time taken : " + timeTaken + " milliseconds");
             console.log('Fastest route: ', route);
 
 
@@ -319,41 +325,72 @@ function calculateRoute() {
                     generateRouteDetails(route, matrix);
                 } else {
                     console.error("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status);
+
+                    alert("Wyznaczenie trasy pomiędzy wybranymi punktami jest niemożliwe przy pomocy danego środka transportu.");
                 }
             });
         } else {
             console.error("Invalid response structure");
+
+            alert("Wyznaczenie trasy pomiędzy wybranymi punktami jest niemożliwe przy pomocy danego środka transportu.");
         }
     });
 }
 
-function nearestNeighbourAlgorith(graph) {
+function mostOptimalPath(graph) {
+    // const length = graph.length;
+    // const visitedNodes = new Array(length).fill(false);
+    // let currentNode = 0;
+    // visitedNodes[currentNode] = true;
+    // const path = [currentNode];
+
+    // for (let i = 1; i < length; i++) {
+    //     let nearestNode = null;
+    //     let shortestDistance = Number.MAX_VALUE;
+
+    //     for (let j = 0; j < length; j++) {
+    //         if (!visitedNodes[j] && graph[currentNode][j][1] < shortestDistance) {
+    //             nearestNode = j;
+    //             shortestDistance = graph[currentNode][j][1];
+    //         }
+    //     }
+
+    //     visitedNodes[nearestNode] = true;
+
+    //     currentNode = nearestNode;
+
+    //     path.push(currentNode);
+    // }
+
+    // return path;
+
     const length = graph.length;
-
     const visitedNodes = new Array(length).fill(false);
+    let path = [];
+    let minCost = Number.MAX_VALUE;
 
-    let currentNode = 0;
-    visitedNodes[currentNode] = true;
-
-    const path = [currentNode];
-
-    for (let i = 1; i < length; i++) {
-        let nearestNode = null;
-        let shortestDistance = Number.MAX_VALUE;
-
-        for (let j = 0; j < length; j++) {
-            if (!visitedNodes[j] && graph[currentNode][j][1] < shortestDistance) {
-                nearestNode = j;
-                shortestDistance = graph[currentNode][j][1];
+    function recursion(currentNode, currentPath, currentCost) {
+        if (currentPath.length === length) {
+            if (currentCost < minCost) {
+                minCost = currentCost;
+                path = currentPath.slice();
             }
+            return;
         }
 
-        visitedNodes[nearestNode] = true;
-
-        currentNode = nearestNode;
-
-        path.push(currentNode);
+        for (let j = 1; j < length; j++) {
+            if (!visitedNodes[j]) {
+                visitedNodes[j] = true;
+                currentPath.push(j);
+                recursion(j, currentPath, currentCost + graph[currentNode][j][1]);
+                visitedNodes[j] = false;
+                currentPath.pop();
+            }
+        }
     }
+
+    visitedNodes[0] = true;
+    recursion(0, [0], 0);
 
     return path;
 }
@@ -410,7 +447,7 @@ function generateRouteDetails(route, matrix) {
     finDist /= 1000;
     finDist = finDist.toFixed(1);
 
-    textHTML += `<p>Podróż łącznie zajmie ${hoursText}${minutes} minut, w sumie zostanie pokonanych ${finDist} km.</p>`;
+    textHTML += `<p>Podróż łącznie zajmie ${hoursText}${minutes} minut, w sumie pokonanasz ${finDist} km.</p>`;
     textHTML += `</div>`;
 
     textContainer.innerHTML = textHTML;
