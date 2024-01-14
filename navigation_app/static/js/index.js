@@ -1,4 +1,4 @@
-// Inicjalizacja mapy
+// Definicja mapy
 let map;
 
 // Tablica znaczników
@@ -43,7 +43,7 @@ async function initMap() {
     // Listen for the event fired when the user selects a prediction and retrieve
     // more details for that place.
     searchBox.addListener("places_changed", () => {
-        handlePlacesChanged(searchBox, map);
+        handlePlacesChanged(searchBox);
     });
 
     document
@@ -64,94 +64,93 @@ async function initMap() {
 }
 
 function addMarker(position, geocoder) {
+    if (markers.length == 10) {
+        alert("Mozliwe jest ustawienie jedynie 10 znacznikow na mapie.");
+        return;
+    }
+
     const latlng = {
         lat: parseFloat(position.lat()),
         lng: parseFloat(position.lng()),
     };
+    var tmpLat = position.lat().toFixed(3);
+    var tmpLng = position.lng().toFixed(3);
+    let LatLngString = [];
 
-    if (markers.length <= 9) {
-        var tmpLat = position.lat().toFixed(3);
-        var tmpLng = position.lng().toFixed(3);
-        let LatLngString = [];
+    // Użyto Geocoding API w celu odszyfrowania adrersu miasta za pomocą współrzędnych 
+    geocoder
+        .geocode({ location: latlng })
+        .then((response) => {
 
-        // Użyto Geocoding API w celu odszyfrowania adrersu miasta za pomocą współrzędnych 
-        geocoder
-            .geocode({ location: latlng })
-            .then((response) => {
-
-                if (response.results[0]) {
-                    LatLngString.push(response.results[0].formatted_address);
-                } else {
-                    LatLngString.push("Szerokość: " + tmpLat + " Długość: " + tmpLng);
-                }
-
-                // Tworzenie znacznika odbywa się wewnątrz obiektu geocoding ponieważ działa on asynchronicznie
-                const marker = new google.maps.Marker({
-                    position,
-                    map,
-
-                    // ID znacznika
-                    marker_id: iterator,
-                    title: LatLngString.toString(),
-                });
-                iterator++;
-
-                markers.push(marker);
-
-                generateMarkerTable();
-                visibilityOfButtons();
-            })
-            .catch((e) => window.alert("Geocoder failed due to: " + e));
-    } else {
-        alert("Możliwe jest ustawienie jedynie 10 znaczników na mapie.");
-
-    }
-}
-
-function handlePlacesChanged(searchBox, map) {
-
-    if (markers.length <= 9) {
-        const places = searchBox.getPlaces();
-
-        if (places.length == 0) {
-            return;
-        }
-
-        const bounds = new google.maps.LatLngBounds();
-
-        places.forEach((place) => {
-            if (!place.geometry || !place.geometry.location) {
-                console.log("Returned place contains no geometry");
-                return;
+            if (response.results[0]) {
+                LatLngString.push(response.results[0].formatted_address);
+            } else {
+                LatLngString.push("Szerokość: " + tmpLat + " Długość: " + tmpLng);
             }
 
-            // Tworzenie znacznika dla każdego wyszukanego miejsca
-            markers.push(
-                new google.maps.Marker({
-                    map,
-                    title: place.name,
-                    position: place.geometry.location,
+            // Tworzenie znacznika odbywa się wewnątrz obiektu geocoding ponieważ działa on asynchronicznie
+            const marker = new google.maps.Marker({
+                position,
+                map,
 
-                    // ID znacznika
-                    marker_id: iterator,
-                }),
-            );
+                // ID znacznika
+                marker_id: iterator,
+                title: LatLngString.toString(),
+            });
             iterator++;
+
+            markers.push(marker);
 
             generateMarkerTable();
             visibilityOfButtons();
+        })
+        .catch((e) => window.alert("Geocoder failed due to: " + e));
+}
 
-            if (place.geometry.viewport) {
-                // Tylko obiekty geocodes posiadaja viewport
-                bounds.union(place.geometry.viewport);
-            } else {
-                bounds.extend(place.geometry.location);
-            }
-        });
-        map.fitBounds(bounds);
-    } else {
-        alert("Możliwe jest ustawienie jedynie 10 znaczników na mapie.");
+function handlePlacesChanged(searchBox) {
+    if (markers.length == 10) {
+        alert("Mozliwe jest ustawienie jedynie 10 znacznikow na mapie.");
+        return;
     }
+    const places = searchBox.getPlaces();
+
+    if (places.length == 0) {
+        return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+
+    places.forEach((place) => {
+        if (!place.geometry || !place.geometry.location) {
+            console.log("Returned place contains no geometry");
+            return;
+        }
+
+        // Tworzenie znacznika dla każdego wyszukanego miejsca
+
+        const marker = new google.maps.Marker({
+            map,
+            title: place.name,
+            position: place.geometry.location,
+
+            // ID znacznika
+            marker_id: iterator,
+        });
+        iterator++;
+
+        markers.push(marker);
+
+        generateMarkerTable();
+        visibilityOfButtons();
+
+        if (place.geometry.viewport) {
+            // Tylko obiekty geocodes posiadaja viewport
+            bounds.union(place.geometry.viewport);
+        } else {
+            bounds.extend(place.geometry.location);
+        }
+    });
+    map.fitBounds(bounds);
 }
 
 // Umieszczenie znaczników znajdujących się w tablicy markers na mapie
@@ -231,7 +230,7 @@ function visibilityOfButtons() {
 // Główna funkcja odpowiedzialna za generowanie tras pomiędzy znacznikami
 function calculateRoute() {
     if (markers.length === 1) {
-        alert("Wyznaczenie trasy dla jednego znacznika jest niemozliwe, proszę dodać więcej punktów na mapę.");
+        alert("Wyznaczenie trasy dla jednego znacznika jest niemożliwe, proszę dodać więcej punktów na mapę.");
         return;
     }
 
@@ -368,6 +367,7 @@ function mostOptimalPath(graph) {
     const visitedNodes = new Array(length).fill(false);
     let path = [];
     let minDuration = Number.MAX_VALUE;
+    // let sprawdzacz = 0;
 
     function recursion(currentNode, currentPath, currentCost) {
         if (currentPath.length === length) {
@@ -375,6 +375,7 @@ function mostOptimalPath(graph) {
                 minDuration = currentCost;
                 path = currentPath.slice();
             }
+            // sprawdzacz++;
             return;
         }
 
@@ -392,6 +393,7 @@ function mostOptimalPath(graph) {
     visitedNodes[0] = true;
     recursion(0, [0], 0);
 
+    // console.log("Ilosc sciezek:", sprawdzacz);
     return path;
 }
 
